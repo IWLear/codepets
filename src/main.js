@@ -2,7 +2,7 @@
 import './styles.css';
 import { store } from './store.js';
 import { initUI, renderAll, navigateTo, showOnboarding, completeOnboarding, handleLogSession, handleClaimHabits, toggleTheme, toggleSound, showConfetti } from './ui.js';
-import { EVOS, ACCENT_PRESETS } from './data.js';
+import { EVOS, ACCENT_PRESETS, LANGUAGES } from './data.js';
 
 // ── Boot ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
