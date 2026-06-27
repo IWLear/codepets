@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   store.checkBadges();
   
   // Track previous evolution for change detection
-  previousEvoId = store.getEvolution().id;
+
 });
 
 // ── Build App Shell ─────────────────────────────────────────────────────────
