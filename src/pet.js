@@ -1,203 +1,188 @@
+// ── Pet Evolution System ───────────────────────────────────────────────────
 import { EVOS } from './data.js';
 
-let animFrame = null;
+// ── SVG Pet Sprites ────────────────────────────────────────────────────────
+export const PET_SPRITES = {
+  egg: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="eggGrad" cx="40%" cy="30%">
+        <stop offset="0%" stop-color="#4a4a60"/>
+        <stop offset="100%" stop-color="#2a2a38"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="50" cy="55" rx="22" ry="28" fill="url(#eggGrad)" stroke="#555" stroke-width="2"/>
+    <ellipse cx="42" cy="45" rx="5" ry="7" fill="#4a4a60" opacity="0.6"/>
+    <circle cx="50" cy="50" r="2" fill="#666" opacity="0.4"/>
+  </svg>`,
 
-// ── Public API ─────────────────────────────────────────────────────────────
-export function startPetAnimation(canvas, evo) {
-  stopPetAnimation();
-  loop(canvas, evo);
+  hatchling: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="hatchGrad" cx="40%" cy="30%">
+        <stop offset="0%" stop-color="${lighten(color, 30)}"/>
+        <stop offset="100%" stop-color="${color}"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="50" cy="54" rx="18" ry="20" fill="url(#hatchGrad)"/>
+    <ellipse cx="50" cy="72" rx="8" ry="5" fill="${color}"/>
+    <circle cx="44" cy="50" r="4" fill="#fff"/>
+    <circle cx="56" cy="50" r="4" fill="#fff"/>
+    <circle cx="44" cy="50" r="2" fill="#000"/>
+    <circle cx="56" cy="50" r="2" fill="#000"/>
+    <ellipse cx="50" cy="58" rx="2" ry="1.5" fill="#000"/>
+  </svg>`,
+
+  apprentice: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="appGrad" cx="40%" cy="30%">
+        <stop offset="0%" stop-color="${lighten(color, 30)}"/>
+        <stop offset="100%" stop-color="${color}"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="50" cy="52" rx="20" ry="22" fill="url(#appGrad)"/>
+    <ellipse cx="42" cy="48" rx="12" ry="14" fill="rgba(255,255,255,0.12)"/>
+    <circle cx="43" cy="46" r="4.5" fill="#fff"/>
+    <circle cx="57" cy="46" r="4.5" fill="#fff"/>
+    <circle cx="43" cy="46" r="2.5" fill="#1a1a2e"/>
+    <circle cx="57" cy="46" r="2.5" fill="#1a1a2e"/>
+    <ellipse cx="50" cy="56" rx="2.5" ry="1.5" fill="#000"/>
+    <path d="M 36 38 Q 30 28 34 22" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="34" cy="22" r="2" fill="${color}"/>
+    <path d="M 64 38 Q 70 28 66 22" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="66" cy="22" r="2" fill="${color}"/>
+  </svg>`,
+
+  dev: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="devGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${lighten(color, 20)}"/>
+        <stop offset="100%" stop-color="${darken(color, 20)}"/>
+      </linearGradient>
+    </defs>
+    <path d="M 50 22 L 68 36 L 68 68 L 32 68 L 32 36 Z" fill="url(#devGrad)" stroke="${color}" stroke-width="2"/>
+    <path d="M 50 22 L 68 36 L 62 36 L 50 26 L 38 36 L 32 36 Z" fill="${color}"/>
+    <circle cx="42" cy="48" r="3.5" fill="#fff"/>
+    <circle cx="58" cy="48" r="3.5" fill="#fff"/>
+    <circle cx="42" cy="48" r="1.8" fill="#000"/>
+    <circle cx="58" cy="48" r="1.8" fill="#000"/>
+    <ellipse cx="50" cy="58" rx="3" ry="2" fill="#000"/>
+    <rect x="44" y="62" width="12" height="2" rx="1" fill="${color}" opacity="0.5"/>
+  </svg>`,
+
+  senior_dev: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="seniorGrad" cx="50%" cy="40%">
+        <stop offset="0%" stop-color="${lighten(color, 30)}"/>
+        <stop offset="100%" stop-color="${color}"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="50" cy="52" rx="22" ry="24" fill="url(#seniorGrad)"/>
+    <ellipse cx="50" cy="52" rx="14" ry="16" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+    <circle cx="42" cy="46" r="5" fill="#fff"/>
+    <circle cx="58" cy="46" r="5" fill="#fff"/>
+    <circle cx="42" cy="46" r="2.8" fill="${color}"/>
+    <circle cx="58" cy="46" r="2.8" fill="${color}"/>
+    <ellipse cx="50" cy="58" rx="3" ry="2" fill="#000"/>
+    <path d="M 38 34 Q 50 28 62 34" stroke="${lighten(color, 20)}" stroke-width="2" fill="none"/>
+    <circle cx="50" cy="30" r="3" fill="${lighten(color, 20)}"/>
+  </svg>`,
+
+  architect: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="archGrad" cx="50%" cy="40%">
+        <stop offset="0%" stop-color="${lighten(color, 40)}"/>
+        <stop offset="100%" stop-color="${color}"/>
+      </radialGradient>
+    </defs>
+    ${[0,1,2,3,4,5].map(i => {
+      const angle = (i / 6) * Math.PI * 2;
+      const x = 50 + Math.cos(angle) * 32;
+      const y = 50 + Math.sin(angle) * 18;
+      return `<circle cx="${x}" cy="${y}" r="3" fill="${color}" opacity="${0.3 + 0.4 * Math.abs(Math.sin(angle))}"/>`;
+    }).join('')}
+    <ellipse cx="50" cy="52" rx="20" ry="22" fill="url(#archGrad)"/>
+    <ellipse cx="50" cy="52" rx="14" ry="16" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+    <circle cx="42" cy="46" r="4.5" fill="#fff"/>
+    <circle cx="58" cy="46" r="4.5" fill="#fff"/>
+    <circle cx="42" cy="46" r="2.5" fill="${darken(color, 30)}"/>
+    <circle cx="58" cy="46" r="2.5" fill="${darken(color, 30)}"/>
+    <ellipse cx="50" cy="58" rx="2.5" ry="1.5" fill="#000"/>
+    <path d="M 44 36 L 50 30 L 56 36" stroke="${lighten(color, 20)}" stroke-width="2" fill="none"/>
+  </svg>`,
+
+  syntaxlord: (color) => `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="syntaxGrad" cx="50%" cy="50%">
+        <stop offset="0%" stop-color="${lighten(color, 50)}"/>
+        <stop offset="100%" stop-color="${color}"/>
+      </radialGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    ${[0,1,2,3,4,5,6,7].map(i => {
+      const angle = (i / 8) * Math.PI * 2;
+      const x1 = 50 + Math.cos(angle) * 8;
+      const y1 = 50 + Math.sin(angle) * 8;
+      const x2 = 50 + Math.cos(angle) * 26;
+      const y2 = 50 + Math.sin(angle) * 26;
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${i % 2 === 0 ? color : '#1e1e28'}" stroke-width="3" stroke-linecap="round"/>`;
+    }).join('')}
+    <circle cx="50" cy="50" r="14" fill="url(#syntaxGrad)" filter="url(#glow)"/>
+    <circle cx="50" cy="50" r="9" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5">
+      <animate attributeName="r" values="9;11;9" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="46" r="3.5" fill="#fff"/>
+    <circle cx="56" cy="46" r="3.5" fill="#fff"/>
+    <circle cx="44" cy="46" r="1.8" fill="#000"/>
+    <circle cx="56" cy="46" r="1.8" fill="#000"/>
+    <ellipse cx="50" cy="54" rx="2" ry="1.2" fill="#000"/>
+  </svg>`,
+};
+
+// ── Color helpers ───────────────────────────────────────────────────────────
+function lighten(hex, percent) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.min(255, (num >> 16) + amt);
+  const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
+  const B = Math.min(255, (num & 0x0000FF) + amt);
+  return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
 }
 
-export function stopPetAnimation() {
-  if (animFrame) {
-    cancelAnimationFrame(animFrame);
-    animFrame = null;
+function darken(hex, percent) {
+  return lighten(hex, -percent);
+}
+
+// ── Pet sprite getter ───────────────────────────────────────────────────────
+export function getPetSprite(evoId) {
+  const evo = EVOS.find(e => e.id === evoId) || EVOS[0];
+  const spriteFn = PET_SPRITES[evoId] || PET_SPRITES.egg;
+  return spriteFn(evo.color);
+}
+
+// ── Pet name generator ──────────────────────────────────────────────────────
+export function generatePetName() {
+  const prefixes = ['Bit', 'Byte', 'Code', 'Dev', 'Git', 'Hex', 'Loop', 'Node', 'Pix', 'Ram', 'Syn', 'Var'];
+  const suffixes = ['bit', 'bug', 'cat', 'fox', 'kit', 'pet', 'pup', 'ryu', 'tux', 'wiz'];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+  return prefix + suffix;
+}
+
+// ── Evolution check ─────────────────────────────────────────────────────────
+export function checkEvolution(state) {
+  const totalXP = state.totalXP;
+  let newEvo = EVOS[0];
+  for (let i = EVOS.length - 1; i >= 0; i--) {
+    if (totalXP >= EVOS[i].minXP) {
+      newEvo = EVOS[i];
+      break;
+    }
   }
-}
-
-// ── Animation loop ─────────────────────────────────────────────────────────
-function loop(canvas, evo) {
-  animFrame = requestAnimationFrame(() => {
-    drawPet(canvas, evo);
-    loop(canvas, evo);
-  });
-}
-
-// ── Main draw dispatcher ───────────────────────────────────────────────────
-function drawPet(canvas, evo) {
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  const t = Date.now() / 1000;
-  const bob = Math.sin(t * 1.8) * 3;
-  const stage = EVOS.indexOf(evo);
-
-  ctx.save();
-  ctx.translate(w / 2, h / 2 + bob);
-
-  switch (stage) {
-    case 0: drawEgg(ctx, t); break;
-    case 1: drawByteling(ctx, evo.color); break;
-    case 2: drawCodeling(ctx, evo.color, t); break;
-    case 3: drawDebugmon(ctx, evo.color); break;
-    case 4: drawArchimander(ctx, evo.color, t); break;
-    default: drawSyntaxlord(ctx, evo.color, t); break;
-  }
-
-  ctx.restore();
-}
-
-// ── Stage drawers ──────────────────────────────────────────────────────────
-function drawEgg(ctx) {
-  ctx.fillStyle = '#2a2a38';
-  ctx.strokeStyle = '#555';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.ellipse(0, 5, 22, 28, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  // Shine
-  ctx.fillStyle = '#4a4a60';
-  ctx.beginPath();
-  ctx.ellipse(-8, -6, 5, 7, -0.3, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawByteling(ctx, color) {
-  // Body
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.ellipse(0, 4, 18, 20, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Eyes
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.ellipse(-6, -2, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(6, -2, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.arc(-6, -1, 2.5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(6, -1, 2.5, 0, Math.PI * 2); ctx.fill();
-  // Foot
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.ellipse(0, 18, 8, 5, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawCodeling(ctx, color, t) {
-  // Body
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.ellipse(0, 2, 20, 22, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Shine
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.beginPath();
-  ctx.ellipse(-5, -5, 12, 14, -0.2, 0, Math.PI);
-  ctx.fill();
-  // Eyes
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.ellipse(-7, -4, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(7, -4, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#1a1a2e';
-  ctx.beginPath(); ctx.arc(-7, -3, 3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(7, -3, 3, 0, Math.PI * 2); ctx.fill();
-  // Antennae (wobble with time)
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  const wobble = Math.sin(t * 2) * 3;
-  ctx.beginPath(); ctx.moveTo(-14, 4); ctx.quadraticCurveTo(-26 + wobble, -4, -20, -14); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(14, 4); ctx.quadraticCurveTo(26 - wobble, -4, 20, -14); ctx.stroke();
-}
-
-function drawDebugmon(ctx, color) {
-  // Dark body
-  ctx.fillStyle = '#1e1e28';
-  ctx.beginPath();
-  ctx.moveTo(0, -28); ctx.lineTo(20, -10);
-  ctx.lineTo(20, 20); ctx.lineTo(-20, 20); ctx.lineTo(-20, -10);
-  ctx.closePath();
-  ctx.fill();
-  // Crown spike
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(0, -28); ctx.lineTo(20, -10); ctx.lineTo(14, -10);
-  ctx.lineTo(0, -22); ctx.lineTo(-14, -10); ctx.lineTo(-20, -10);
-  ctx.closePath();
-  ctx.fill();
-  // Side orbs
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.ellipse(-8, 2, 6, 7, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(8, 2, 6, 7, 0, 0, Math.PI * 2); ctx.fill();
-  // Eye whites
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.arc(-8, 1, 3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(8, 1, 3, 0, Math.PI * 2); ctx.fill();
-  // Pupils
-  ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.arc(-8, 1, 1.5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(8, 1, 1.5, 0, Math.PI * 2); ctx.fill();
-}
-
-function drawArchimander(ctx, color, t) {
-  // Orbiting particles
-  for (let i = 0; i < 6; i++) {
-    const angle = (i / 6) * Math.PI * 2 + t * 0.8;
-    const px = Math.cos(angle) * 32;
-    const py = Math.sin(angle) * 18;
-    const alpha = 0.3 + 0.4 * Math.abs(Math.sin(angle));
-    ctx.fillStyle = color + Math.round(alpha * 255).toString(16).padStart(2, '0');
-    ctx.beginPath();
-    ctx.arc(px, py, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // Body
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 20, 24, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Inner glow ring
-  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 14, 17, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  // Eyes
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.ellipse(-6, -3, 4.5, 5.5, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(6, -3, 4.5, 5.5, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.arc(-6, -2, 2.5, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(6, -2, 2.5, 0, Math.PI * 2); ctx.fill();
-}
-
-function drawSyntaxlord(ctx, color, t) {
-  // Spinning crown spikes
-  for (let i = 0; i < 8; i++) {
-    ctx.save();
-    ctx.rotate((i / 8) * Math.PI * 2 + t * 0.25);
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(10, -26); ctx.lineTo(0, -22); ctx.lineTo(-10, -26);
-    ctx.closePath();
-    ctx.fillStyle = i % 2 === 0 ? color : '#1e1e28';
-    ctx.fill();
-    ctx.restore();
-  }
-  // Core body
-  ctx.fillStyle = color;
-  ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
-  // Inner ring pulse
-  const pulse = 0.5 + 0.5 * Math.sin(t * 3);
-  ctx.strokeStyle = `rgba(255,255,255,${0.1 + pulse * 0.3})`;
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.stroke();
-  // Eyes
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.ellipse(-4.5, -1.5, 3.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(4.5, -1.5, 3.5, 4.5, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.arc(-4.5, -1, 1.8, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(4.5, -1, 1.8, 0, Math.PI * 2); ctx.fill();
+  return newEvo;
 }
