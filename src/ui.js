@@ -1,6 +1,6 @@
 // ── UI Rendering & Interactions ─────────────────────────────────────────────
 import { store } from './store.js';
-import { EVOS, BADGES, LANGUAGES, ACCENT_PRESETS, INVENTORY_ITEMS } from './data.js';
+import { EVOS, BADGES, LANGUAGES, ACCENT_PRESETS, INVENTORY_ITEMS, HABITS } from './data.js';
 import { getPetSprite, generatePetName } from './pet.js';
 import { getRecentSessions, getSessionStats } from './sessions.js';
 import { getTodayHabits, canClaimHabits } from './habits.js';
